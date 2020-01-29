@@ -6,8 +6,6 @@ import logging
 
 from parallel import run_parallel_batches
 
-from multiprocessing import Queue, Process, Pool, Manager
-
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -89,33 +87,6 @@ def parse_gram_results(csv_files, gram_dictionary, ngram, cutoff_year):
                     gram_dictionary[gram] += count
                 else:
                     gram_dictionary[gram] = count
-
-
-def parse_gram_result(csv_file, gram_dictionary, ngram, cutoff_year):
-    logging.info(f"read csv {csv_file}")
-
-    # read csv lines
-    f = open(csv_file, "r")
-    gram_lines = f.readlines()
-    f.close()
-
-    # remove csv file
-    os.remove(csv_file)
-
-    logging.info(f"parse ngram lines")
-
-    # parse ngram lines
-    for gram_line in gram_lines:
-        components = gram_line.split("\t")
-        gram = " ".join(components[:ngram]).lower()
-        year = int(components[ngram])
-        count = int(components[ngram + 1])
-
-        if year > cutoff_year:
-            if gram in gram_dictionary:
-                gram_dictionary[gram] += count
-            else:
-                gram_dictionary[gram] = count
 
 
 def parse_google_ngram_files(ngram: int, cutoff_year: int, max_entries: int, source_path: str, tmp_dir: str):
