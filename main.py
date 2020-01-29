@@ -113,8 +113,6 @@ def parse_google_ngram_files(num_grams: int, cutoff_year: int, max_entries: int,
         # append job
         jobs.append((download_ngram_file, (url, tmp_dir)))
 
-        break
-
     run_parallel_batches(jobs, 4, lambda results: parse_gram_results(results, gram_dictionary, cutoff_year, to_lower))
 
     logging.info(f"sort entries")
