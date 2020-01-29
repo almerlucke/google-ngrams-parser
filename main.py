@@ -25,14 +25,19 @@ def is_numeric(gram: str):
     return False
 
 
-def is_valid_gram(gram: str):
-    if is_numeric(gram):
+def is_valid_gram(gram: str, n: int):
+    components = gram.split(" ")
+
+    if len(components) != n:
         return False
 
-    if gram.isalnum():
+    if any(is_numeric(component) for component in components):
+        return False
+
+    if all(component.isalnum() for component in components):
         return True
 
-    return any(c.isalpha() for c in gram)
+    return all(any(c.isalpha() for c in component) for component in components)
 
 
 def download_ngram_file(url, tmp_dir):
@@ -61,7 +66,7 @@ def download_ngram_file(url, tmp_dir):
     return csv_path
 
 
-def parse_gram_results(csv_files, gram_dictionary, ngram, cutoff_year):
+def parse_gram_results(csv_files, gram_dictionary, cutoff_year, to_lower):
     for csv_file in csv_files:
         logging.info(f"read csv {csv_file}")
 
@@ -78,9 +83,11 @@ def parse_gram_results(csv_files, gram_dictionary, ngram, cutoff_year):
         # parse ngram lines
         for gram_line in gram_lines:
             components = gram_line.split("\t")
-            gram = " ".join(components[:ngram]).lower()
-            year = int(components[ngram])
-            count = int(components[ngram + 1])
+            gram = components[0]
+            if to_lower:
+                gram = gram.lower()
+            year = int(components[1])
+            count = int(components[2])
 
             if year > cutoff_year:
                 if gram in gram_dictionary:
@@ -89,7 +96,7 @@ def parse_gram_results(csv_files, gram_dictionary, ngram, cutoff_year):
                     gram_dictionary[gram] = count
 
 
-def parse_google_ngram_files(ngram: int, cutoff_year: int, max_entries: int, source_path: str, tmp_dir: str):
+def parse_google_ngram_files(num_grams: int, cutoff_year: int, max_entries: int, to_lower: bool, source_path: str, tmp_dir: str):
     url_seeker = re.compile("<a href='(.*?)'>")
 
     # open source html path
@@ -106,13 +113,15 @@ def parse_google_ngram_files(ngram: int, cutoff_year: int, max_entries: int, sou
         # append job
         jobs.append((download_ngram_file, (url, tmp_dir)))
 
-    run_parallel_batches(jobs, 4, lambda results: parse_gram_results(results, gram_dictionary, ngram, cutoff_year))
+        break
+
+    run_parallel_batches(jobs, 4, lambda results: parse_gram_results(results, gram_dictionary, cutoff_year, to_lower))
 
     logging.info(f"sort entries")
 
     # get all entries, filter for valid grams and sort on frequency
     all_entries = list(gram_dictionary.items())
-    all_entries = list(filter(lambda tup: is_valid_gram(tup[0]), all_entries))
+    all_entries = list(filter(lambda tup: is_valid_gram(tup[0], num_grams), all_entries))
     all_entries.sort(key=lambda tup: tup[1], reverse=True)
 
     return all_entries[:max_entries]
@@ -127,7 +136,7 @@ if not os.path.exists(tmp_dir):
 if not os.path.exists(dest_dir):
     os.mkdir(dest_dir)
 
-entries = parse_google_ngram_files(2, 1980, 1_000_000, "sources/french_bigrams_sources.html", tmp_dir)
+entries = parse_google_ngram_files(2, 1980, 1_000_000, False, "sources/french_bigrams_sources.html", tmp_dir)
 
 dest_path = os.path.join(dest_dir, "french_bigrams.csv")
 
