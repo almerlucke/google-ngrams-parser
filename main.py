@@ -125,22 +125,25 @@ def parse_google_ngram_files(num_grams: int, cutoff_year: int, max_entries: int,
     return all_entries[:max_entries]
 
 
-tmp_dir = "tmp"
-dest_dir = "results"
+def parse(ngrams, cutoff_year, max_entries, lower_case, input_html, output_file):
+    tmp_dir = "tmp"
+    dest_dir = "results"
 
-if not os.path.exists(tmp_dir):
-    os.mkdir(tmp_dir)
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
 
-if not os.path.exists(dest_dir):
-    os.mkdir(dest_dir)
+    if not os.path.exists(dest_dir):
+        os.mkdir(dest_dir)
 
-entries = parse_google_ngram_files(2, 1980, 1_000_000, False, "sources/french_bigrams_sources.html", tmp_dir)
+    entries = parse_google_ngram_files(ngrams, cutoff_year, max_entries, lower_case, input_html, tmp_dir)
 
-dest_path = os.path.join(dest_dir, "french_bigrams.csv")
+    dest_path = os.path.join(dest_dir, output_file)
 
-logging.info(f"write entries to {dest_path}")
+    with open(dest_path, "w") as f:
+        for entry in entries:
+            grams = "\t".join(entry[0].split(" "))
+            f.write(f"{entry[1]}\t{grams}\n")
 
-with open(dest_path, "w") as f:
-    for entry in entries:
-        f.write(f"{entry[0]}\t{entry[1]}\n")
+
+parse(2, 1980, 1_000_000, False, "sources/french_bigrams_sources.html", "french_bigrams.csv", "tmp", "results")
 
