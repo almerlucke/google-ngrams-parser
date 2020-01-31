@@ -77,7 +77,7 @@ def parse_gram_results(csv_files, gram_dictionary, cutoff_year, to_lower):
         except Exception as e:
             logging.info(f"exception: {repr(e)}")
             os.remove(csv_file)
-            return
+            continue
 
         # remove csv file
         os.remove(csv_file)
