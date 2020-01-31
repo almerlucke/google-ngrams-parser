@@ -145,5 +145,5 @@ def parse(ngrams, cutoff_year, max_entries, lower_case, input_html, output_file)
             f.write(f"{entry[1]}\t{grams}\n")
 
 
-parse(2, 1980, 1_000_000, False, "sources/french_bigrams_sources.html", "french_bigrams.csv", "tmp", "results")
+parse(2, 1980, 1_000_000, False, "sources/french_bigrams_sources.html", "french_bigrams.csv")
 
