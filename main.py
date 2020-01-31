@@ -75,7 +75,7 @@ def parse_gram_results(csv_files, gram_dictionary, cutoff_year, to_lower):
             with open(csv_file, "r") as f:
                 gram_lines = f.readlines()
         except Exception as e:
-            logging.info(f"exception: {repr(e)}")
+            logging.info(f"exception reading csv")
             os.remove(csv_file)
             continue
 
