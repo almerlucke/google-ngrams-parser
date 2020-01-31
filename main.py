@@ -70,10 +70,14 @@ def parse_gram_results(csv_files, gram_dictionary, cutoff_year, to_lower):
     for csv_file in csv_files:
         logging.info(f"read csv {csv_file}")
 
-        # read csv lines
-        f = open(csv_file, "r")
-        gram_lines = f.readlines()
-        f.close()
+        try:
+            # read csv lines
+            with open(csv_file, "r") as f:
+                gram_lines = f.readlines()
+        except Exception as e:
+            logging.info(f"exception: {repr(e)}")
+            os.remove(csv_file)
+            return
 
         # remove csv file
         os.remove(csv_file)
@@ -145,5 +149,5 @@ def parse(ngrams, cutoff_year, max_entries, lower_case, input_html, output_file)
             f.write(f"{entry[1]}\t{grams}\n")
 
 
-parse(2, 1980, 1_000_000, False, "sources/french_bigrams_sources.html", "french_bigrams.csv")
+parse(1, 1980, 100_000, True, "sources/spanish_unigrams_sources.html", "grams.1")
 
